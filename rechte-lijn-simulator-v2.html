@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rechte Lijn Simulator | Doelgericht Coachen</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Nunito:wght@400;500;600;700&family=Nunito+Sans:wght@400;600&display=swap');
+
+:root {
+  --bg: #f5f4f0;
+  --white: #ffffff;
+  --surface: #fdfcfa;
+  --border: #e2dfd8;
+  --border2: #ccc9c0;
+  --orange: #f27321;
+  --orange-light: #fff4ed;
+  --orange-mid: #fde4cf;
+  --blue: #1a5fa8;
+  --blue-light: #eaf1fb;
+  --text: #1a1916;
+  --muted: #7a7670;
+  --green: #2aaa6c;
+  --green-light: #e6f7ef;
+  --red: #e03b3b;
+  --red-light: #fdeaea;
+  --yellow: #f5b400;
+  --yellow-light: #fef8e1;
+  --shadow: 0 2px 16px rgba(26,25,22,0.08);
+  --shadow-lg: 0 8px 40px rgba(26,25,22,0.13);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ===== WELCOME SCREEN ===== */
+#welcome {
+  position: fixed; inset: 0;
+  background: var(--white);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 999;
+  padding: 40px 20px;
+  background-image: radial-gradient(ellipse at 80% 20%, #fff4ed 0%, transparent 60%),
+                    radial-gradient(ellipse at 10% 80%, #eaf1fb 0%, transparent 50%);
+}
+
+.welcome-badge {
+  background: var(--orange-light);
+  border: 1px solid var(--orange-mid);
+  color: var(--orange);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 40px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.welcome-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(40px, 7vw, 80px);
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+
+.welcome-title .highlight {
+  color: var(--orange);
+  position: relative;
+  display: inline-block;
+}
+
+.welcome-title .highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 2px; left: 0; right: 0;
+  height: 4px;
+  background: var(--orange);
+  border-radius: 2px;
+  transform: scaleX(0);
+  animation: lineIn 0.5s 0.7s ease forwards;
+}
+
+@keyframes lineIn { to { transform: scaleX(1); } }
+
+.welcome-sub {
+  font-size: 16px;
+  color: var(--muted);
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.7;
+  margin-top: 16px;
+  animation: fadeUp 0.5s 0.2s ease both;
+}
+
+.welcome-features {
+  display: flex; gap: 12px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp 0.5s 0.3s ease both;
+}
+
+.feat-chip {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+  box-shadow: var(--shadow);
+}
+
+.feat-chip .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+
+.start-btn {
+  margin-top: 32px;
+  padding: 16px 48px;
+  background: var(--orange);
+  border: none; border-radius: 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700;
+  letter-spacing: 0.5px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(242,115,33,0.35);
+  animation: fadeUp 0.5s 0.4s ease both;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(242,115,33,0.45);
+}
+
+.welcome-logo {
+  position: absolute; bottom: 24px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== HEADER ===== */
+header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 1px 8px rgba(26,25,22,0.06);
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px; font-weight: 800;
+  color: var(--text);
+}
+
+.logo span { color: var(--orange); }
+
+.header-phases {
+  display: flex; align-items: center; gap: 4px;
+}
+
+.hphase {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  transition: all 0.3s;
+}
+
+.hphase.active {
+  background: var(--orange-light);
+  color: var(--orange);
+}
+
+.hphase.done {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.hphase-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.header-right {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.session-badge {
+  background: var(--blue-light);
+  color: var(--blue);
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+/* ===== LAYOUT ===== */
+.app {
+  display: grid;
+  grid-template-columns: 260px 1fr 290px;
+  height: calc(100vh - 60px);
+}
+
+/* ===== LEFT PANEL ===== */
+.left-panel {
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+.panel-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 8px;
+}
+
+.scenario-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-bottom: 8px;
+}
+
+.scenario-card:hover {
+  border-color: var(--orange);
+  background: var(--orange-light);
+  transform: translateX(2px);
+}
+
+.scenario-card.selected {
+  border-color: var(--orange);
+  background: var(--orange-light);
+  box-shadow: 0 2px 12px rgba(242,115,33,0.15);
+}
+
+.sc-top {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.sc-type {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.b2b { background: var(--blue-light); color: var(--blue); }
+.b2c { background: var(--orange-light); color: var(--orange); }
+
+.sc-diff {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 7px; border-radius: 20px;
+}
+
+.easy { background: var(--green-light); color: var(--green); }
+.medium { background: var(--yellow-light); color: var(--yellow); }
+.hard { background: var(--red-light); color: var(--red); }
+
+.sc-title {
+  font-size: 13px; font-weight: 600;
+  line-height: 1.4; color: var(--text);
+}
+
+.sc-sub {
+  font-size: 11px; color: var(--muted);
+  margin-top: 3px;
+}
+
+/* DISC widget */
+.disc-widget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.disc-dominant {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.disc-row {
+  display: flex; align-items: center;
+  gap: 8px; margin-bottom: 8px;
+}
+
+.disc-ltr {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 800;
+  width: 14px; flex-shrink: 0;
+}
+
+.d-ltr { color: var(--red); }
+.i-ltr { color: var(--orange); }
+.s-ltr { color: var(--green); }
+.c-ltr { color: var(--blue); }
+
+.disc-track {
+  flex: 1; height: 7px;
+  background: var(--border);
+  border-radius: 4px; overflow: hidden;
+}
+
+.disc-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+
+.d-fill { background: var(--red); }
+.i-fill { background: var(--orange); }
+.s-fill { background: var(--green); }
+.c-fill { background: var(--blue); }
+
+.disc-num {
+  font-size: 11px; font-weight: 700;
+  width: 28px; text-align: right;
+  color: var(--muted);
+}
+
+.disc-tip {
+  font-size: 11px; color: var(--muted);
+  line-height: 1.6; margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===== CENTER - CHAT ===== */
+.chat-area {
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.chat-top {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.client-ava {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--orange-light);
+  border: 2px solid var(--orange-mid);
+  display: flex; align-items: center;
+  justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+
+.client-meta h3 { font-size: 14px; font-weight: 700; }
+.client-meta p { font-size: 11px; color: var(--muted); }
+
+.phase-pill {
+  margin-left: auto;
+  background: var(--orange-light);
+  border: 1px solid var(--orange-mid);
+  color: var(--orange);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1px;
+  padding: 5px 12px; border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.closing-meter {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+}
+
+.cm-label { font-size: 11px; font-weight: 700; color: var(--muted); }
+
+.cm-track {
+  flex: 1; height: 6px;
+  background: var(--border);
+  border-radius: 3px; overflow: hidden;
+}
+
+.cm-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--yellow) 0%, var(--orange) 50%, var(--green) 100%);
+  transition: width 0.6s ease;
+}
+
+.cm-pct {
+  font-size: 11px; font-weight: 700;
+  color: var(--orange); width: 32px;
+}
+
+/* Messages */
+.messages {
+  flex: 1; overflow-y: auto;
+  padding: 20px; display: flex;
+  flex-direction: column; gap: 14px;
+}
+
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.msg { display: flex; gap: 10px; animation: msgIn 0.25s ease; }
+.msg.user { flex-direction: row-reverse; }
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.msg-ava {
+  width: 30px; height: 30px;
+  border-radius: 50%; display: flex;
+  align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: var(--white);
+}
+
+.bubble {
+  max-width: 68%;
+  padding: 11px 15px;
+  border-radius: 14px;
+  font-size: 14px; line-height: 1.6;
+}
+
+.msg.client .bubble {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-top-left-radius: 3px;
+  box-shadow: var(--shadow);
+}
+
+.msg.user .bubble {
+  background: var(--orange);
+  color: white;
+  border-top-right-radius: 3px;
+  box-shadow: 0 2px 12px rgba(242,115,33,0.25);
+}
+
+.msg.system {
+  justify-content: center;
+}
+
+.msg.system .bubble {
+  background: var(--blue-light);
+  border: 1px solid #c5d9f0;
+  color: var(--blue);
+  font-size: 12px; font-style: italic;
+  border-radius: 8px;
+  max-width: 90%;
+}
+
+.typing-bubble {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px; border-top-left-radius: 3px;
+  padding: 12px 16px;
+  display: flex; gap: 5px; align-items: center;
+  box-shadow: var(--shadow);
+}
+
+.typing-dot {
+  width: 7px; height: 7px;
+  background: var(--border2);
+  border-radius: 50%;
+  animation: tdot 1.2s infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes tdot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* Input */
+.input-area {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex; gap: 10px; align-items: flex-end;
+}
+
+.input-wrap { flex: 1; }
+
+textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 14px; color: var(--text);
+  resize: none; outline: none;
+  min-height: 44px; max-height: 120px;
+  line-height: 1.5;
+  transition: border-color 0.2s;
+}
+
+textarea:focus { border-color: var(--orange); }
+textarea::placeholder { color: var(--muted); }
+
+.send-btn {
+  width: 44px; height: 44px;
+  background: var(--orange);
+  border: none; border-radius: 10px;
+  cursor: pointer; color: white;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+
+.send-btn:hover { background: #e0640f; transform: scale(1.05); }
+.send-btn:disabled { background: var(--border2); cursor: not-allowed; transform: none; }
+
+/* ===== RIGHT PANEL ===== */
+.right-panel {
+  background: var(--white);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+
+.right-panel::-webkit-scrollbar { width: 4px; }
+.right-panel::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.rsection {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rsec-title {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px;
+}
+
+/* Score ring */
+.score-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 14px;
+}
+
+.score-ring {
+  width: 58px; height: 58px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+.score-big {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800;
+  color: var(--orange); line-height: 1;
+}
+
+.score-of { font-size: 9px; color: var(--muted); }
+
+.score-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* Principle rows */
+.prin-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.prin-row:last-child { border-bottom: none; }
+
+.prin-name { color: var(--text); font-weight: 500; }
+
+.prin-badge {
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 10px; font-weight: 700;
+}
+
+.pb-good { background: var(--green-light); color: var(--green); }
+.pb-mid { background: var(--yellow-light); color: var(--yellow); }
+.pb-low { background: var(--red-light); color: var(--red); }
+.pb-na { background: var(--bg); color: var(--muted); }
+
+/* Kansen */
+.kans-item {
+  display: flex; gap: 8px;
+  font-size: 12px; line-height: 1.5;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.ki-icon { flex-shrink: 0; font-size: 13px; }
+
+/* Live tip */
+.tip-box {
+  background: var(--orange-light);
+  border: 1px solid var(--orange-mid);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.tip-box strong {
+  display: block;
+  color: var(--orange);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+/* Coach CTA */
+.coach-cta {
+  margin: 16px;
+  background: linear-gradient(135deg, var(--orange) 0%, #e0640f 100%);
+  border-radius: 14px;
+  padding: 18px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(242,115,33,0.3);
+}
+
+.cta-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.cta-sub {
+  font-size: 11px; opacity: 0.9;
+  line-height: 1.5; margin-bottom: 14px;
+}
+
+.cta-btn {
+  display: block; width: 100%;
+  background: white;
+  border: none; border-radius: 8px;
+  padding: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: var(--orange);
+  cursor: pointer; text-decoration: none;
+  margin-bottom: 8px;
+  transition: opacity 0.2s;
+}
+
+.cta-btn:hover { opacity: 0.9; }
+
+.cta-btn-ghost {
+  display: block; width: 100%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 8px;
+  padding: 9px;
+  font-size: 12px; font-weight: 600;
+  color: white;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.2s;
+}
+
+.cta-btn-ghost:hover { background: rgba(255,255,255,0.25); }
+
+.end-btn {
+  margin: 0 16px 16px;
+  padding: 12px;
+  background: transparent;
+  border: 1.5px solid var(--border2);
+  border-radius: 10px;
+  color: var(--muted);
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer; width: calc(100% - 32px);
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+
+.end-btn:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+/* ===== FEEDBACK MODAL ===== */
+#fb-modal {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,25,22,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 300; align-items: center;
+  justify-content: center; padding: 20px;
+}
+
+#fb-modal.open { display: flex; }
+
+.fb-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 660px; width: 100%;
+  max-height: 88vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s ease;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.fb-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.fb-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px; font-weight: 800;
+}
+
+.fb-scenario { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+.fb-total-score {
+  text-align: center;
+  background: var(--orange-light);
+  border: 2px solid var(--orange-mid);
+  border-radius: 14px;
+  padding: 12px 20px;
+  flex-shrink: 0;
+}
+
+.fb-score-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px; font-weight: 800;
+  color: var(--orange); line-height: 1;
+}
+
+.fb-score-lbl { font-size: 11px; color: var(--muted); font-weight: 600; }
+
+.fb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 20px;
+}
+
+.fb-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.fb-block-title {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+.fb-list { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+
+.fb-list li {
+  font-size: 12px; line-height: 1.5;
+  color: var(--muted);
+  display: flex; gap: 8px;
+}
+
+.fb-list li::before { content: "→"; color: var(--orange); flex-shrink: 0; }
+
+.fb-prin-row {
+  display: flex; align-items: center;
+  gap: 8px; padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.fb-prin-row:last-child { border-bottom: none; }
+
+.fb-prin-name { flex: 1; color: var(--muted); }
+
+.fb-prin-score {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 14px;
+}
+
+.fb-prin-desc { flex: 2; font-size: 11px; color: var(--muted); text-align: right; }
+
+/* Coach upsell in modal */
+.fb-coach-box {
+  background: linear-gradient(135deg, var(--orange) 0%, #e0640f 100%);
+  border-radius: 14px;
+  padding: 20px; color: white;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.fb-coach-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 17px; font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.fb-coach-sub {
+  font-size: 12px; opacity: 0.9;
+  line-height: 1.5; margin-bottom: 14px;
+}
+
+.fb-coach-links {
+  display: flex; gap: 10px;
+  justify-content: center; flex-wrap: wrap;
+}
+
+.fb-coach-link {
+  background: white;
+  border: none; border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 12px; font-weight: 700;
+  color: var(--orange);
+  cursor: pointer; text-decoration: none;
+  transition: opacity 0.2s;
+  display: inline-block;
+}
+
+.fb-coach-link:hover { opacity: 0.9; }
+
+.fb-coach-link.ghost {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.4);
+  color: white;
+}
+
+.fb-actions {
+  display: flex; gap: 10px;
+}
+
+.btn-pri {
+  flex: 1; padding: 13px;
+  background: var(--orange);
+  border: none; border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: white; cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-pri:hover { background: #e0640f; }
+
+.btn-sec {
+  flex: 1; padding: 13px;
+  background: transparent;
+  border: 1.5px solid var(--border2);
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--text); cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-sec:hover { border-color: var(--text); }
+
+/* Loading spinner */
+#fb-loading {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="welcome">
+  <div class="welcome-badge">🎯 Doelgericht Coachen</div>
+  <div class="welcome-title">
+    Rechte Lijn<br><span class="highlight">Simulator</span>
+  </div>
+  <div class="welcome-sub">Oefen de vijf stappen van de Rechte Lijn Methode in realistische gesprekken. Arie speelt de klant. Jij leidt het proces.</div>
+  <div class="welcome-features">
+    <div class="feat-chip"><div class="dot" style="background:var(--orange)"></div> B2B &amp; B2C</div>
+    <div class="feat-chip"><div class="dot" style="background:var(--blue)"></div> DISC-analyse</div>
+    <div class="feat-chip"><div class="dot" style="background:var(--green)"></div> 5 stappen methode</div>
+    <div class="feat-chip"><div class="dot" style="background:var(--red)"></div> Sluitingsgraad</div>
+  </div>
+  <button class="start-btn" onclick="startApp()">Start Training ›</button>
+  <div class="welcome-logo">DOELGERICHT COACHEN</div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Rechte Lijn <span>Simulator</span></div>
+  <div class="header-phases" id="header-phases">
+    <div class="hphase" id="hp1"><div class="hphase-dot"></div> Kader</div>
+    <div class="hphase" id="hp2"><div class="hphase-dot"></div> Verbinding</div>
+    <div class="hphase" id="hp3"><div class="hphase-dot"></div> Verheldering</div>
+    <div class="hphase" id="hp4"><div class="hphase-dot"></div> Richting</div>
+    <div class="hphase" id="hp5"><div class="hphase-dot"></div> Afronding</div>
+  </div>
+  <div class="header-right">
+    <div class="session-badge" id="turn-count">0 beurten</div>
+  </div>
+</header>
+
+<!-- MAIN APP -->
+<div class="app">
+
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div>
+      <div class="panel-label">Kies scenario</div>
+      <div id="scenario-list"></div>
+    </div>
+
+    <div>
+      <div class="panel-label">DISC klantprofiel</div>
+      <div class="disc-widget">
+        <div class="disc-dominant" id="disc-dominant">Selecteer scenario</div>
+        <div class="disc-row">
+          <div class="disc-ltr d-ltr">D</div>
+          <div class="disc-track"><div class="disc-fill d-fill" id="dbar" style="width:0%"></div></div>
+          <div class="disc-num" id="dpct">0%</div>
+        </div>
+        <div class="disc-row">
+          <div class="disc-ltr i-ltr">I</div>
+          <div class="disc-track"><div class="disc-fill i-fill" id="ibar" style="width:0%"></div></div>
+          <div class="disc-num" id="ipct">0%</div>
+        </div>
+        <div class="disc-row">
+          <div class="disc-ltr s-ltr">S</div>
+          <div class="disc-track"><div class="disc-fill s-fill" id="sbar" style="width:0%"></div></div>
+          <div class="disc-num" id="spct">0%</div>
+        </div>
+        <div class="disc-row">
+          <div class="disc-ltr c-ltr">C</div>
+          <div class="disc-track"><div class="disc-fill c-fill" id="cbar" style="width:0%"></div></div>
+          <div class="disc-num" id="cpct">0%</div>
+        </div>
+        <div class="disc-tip" id="disc-tip">Kies een scenario om DISC-tips te zien.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="chat-area">
+    <div class="chat-top">
+      <div class="client-ava" id="client-ava">?</div>
+      <div class="client-meta">
+        <h3 id="client-name">Kies een scenario</h3>
+        <p id="client-role">en start het gesprek</p>
+      </div>
+      <div class="phase-pill" id="phase-pill">FASE 1</div>
+    </div>
+
+    <div class="closing-meter">
+      <div class="cm-label">CLOSING KANS</div>
+      <div class="cm-track"><div class="cm-fill" id="cm-fill" style="width:0%"></div></div>
+      <div class="cm-pct" id="cm-pct">0%</div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="msg system">
+        <div class="bubble">Kies een scenario links om te beginnen. Jij bent de verkoper, Arie speelt de klant.</div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea id="user-input" placeholder="Typ jouw reactie..." rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)" disabled></textarea>
+      </div>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>➤</button>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+
+    <div class="rsection">
+      <div class="rsec-title">Rechte Lijn Score</div>
+      <div class="score-header">
+        <div class="score-ring">
+          <div class="score-big" id="total-score">0</div>
+          <div class="score-of">/100</div>
+        </div>
+        <div class="score-desc" id="score-desc">Start een gesprek om je score op te bouwen.</div>
+      </div>
+      <div>
+        <div class="prin-row">
+          <span class="prin-name">Kader zetten</span>
+          <span class="prin-badge pb-na" id="pr-rapport">N/A</span>
+        </div>
+        <div class="prin-row">
+          <span class="prin-name">Verbinding bouwen</span>
+          <span class="prin-badge pb-na" id="pr-behoefte">N/A</span>
+        </div>
+        <div class="prin-row">
+          <span class="prin-name">Verheldering</span>
+          <span class="prin-badge pb-na" id="pr-product">N/A</span>
+        </div>
+        <div class="prin-row">
+          <span class="prin-name">Richting benoemen</span>
+          <span class="prin-badge pb-na" id="pr-bezwaar">N/A</span>
+        </div>
+        <div class="prin-row">
+          <span class="prin-name">Afronding (sluiten)</span>
+          <span class="prin-badge pb-na" id="pr-closing">N/A</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rsection">
+      <div class="rsec-title">Gemiste kansen</div>
+      <div id="missed-ops">
+        <div class="kans-item"><span class="ki-icon">○</span><span>Start het gesprek om kansen te zien.</span></div>
+      </div>
+    </div>
+
+    <div class="rsection">
+      <div class="rsec-title">Live tip</div>
+      <div class="tip-box" id="live-tip">
+        <strong>💡 Volgende zet</strong>
+        Tips verschijnen zodra je begint.
+      </div>
+    </div>
+
+    <div class="coach-cta">
+      <div class="cta-title">Wil je persoonlijke begeleiding?</div>
+      <div class="cta-sub">Arie helpt je de Rechte Lijn Methode écht eigen te maken via 1-op-1 coaching.</div>
+      <a class="cta-btn" href="/cdn-cgi/l/email-protection#2c45424a436c484349404b495e454f44584f434d4f444942024240">✉ <span class="__cf_email__" data-cfemail="9ff6f1f9f0dffbf0faf3f8faedf6fcf7ebfcf0fefcf7faf1b1f1f3">[email&#160;protected]</span></a>
+      <a class="cta-btn-ghost" href="tel:+31621504930">📞 06 215 049 30</a>
+    </div>
+
+    <button class="end-btn" onclick="endConversation()">Gesprek beëindigen &amp; analyseer ›</button>
+
+  </div>
+</div>
+
+<!-- FEEDBACK MODAL -->
+<div id="fb-modal">
+  <div class="fb-card">
+    <div id="fb-loading">
+      <div class="spinner"></div>
+      Analyse wordt gegenereerd...
+    </div>
+    <div id="fb-content" style="display:none">
+      <div class="fb-header">
+        <div>
+          <div class="fb-title">Gespreksanalyse</div>
+          <div class="fb-scenario" id="fb-scenario"></div>
+        </div>
+        <div class="fb-total-score">
+          <div class="fb-score-num" id="fb-total">0</div>
+          <div class="fb-score-lbl">van de 100</div>
+        </div>
+      </div>
+
+      <div class="fb-block" style="margin-bottom:14px">
+        <div class="fb-block-title">Rechte Lijn Principes</div>
+        <div id="fb-principles"></div>
+      </div>
+
+      <div class="fb-grid">
+        <div class="fb-block">
+          <div class="fb-block-title">DISC aansluiting</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px" id="fb-disc-type"></div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5" id="fb-disc-desc"></div>
+        </div>
+        <div class="fb-block">
+          <div class="fb-block-title">Closing analyse</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5" id="fb-closing-analysis"></div>
+        </div>
+        <div class="fb-block">
+          <div class="fb-block-title">Gemiste kansen</div>
+          <ul class="fb-list" id="fb-missed"></ul>
+        </div>
+        <div class="fb-block">
+          <div class="fb-block-title">Verbeterpunten</div>
+          <ul class="fb-list" id="fb-improve"></ul>
+        </div>
+      </div>
+
+      <div class="fb-coach-box">
+        <div class="fb-coach-title">Klaar voor de volgende stap?</div>
+        <div class="fb-coach-sub">Arie van Doelgericht Coachen helpt je de Rechte Lijn Methode volledig te beheersen met persoonlijke 1-op-1 coaching.</div>
+        <div class="fb-coach-links">
+          <a class="fb-coach-link" href="/cdn-cgi/l/email-protection#7a13141c153a1e151f161d1f081319120e19151b19121f14541416">✉ <span class="__cf_email__" data-cfemail="86efe8e0e9c6e2e9e3eae1e3f4efe5eef2e5e9e7e5eee3e8a8e8ea">[email&#160;protected]</span></a>
+          <a class="fb-coach-link" href="tel:+31621504930">📞 06 215 049 30</a>
+          <a class="fb-coach-link ghost" href="https://doelgerichtcoachen.nl" target="_blank">🌐 doelgerichtcoachen.nl</a>
+        </div>
+      </div>
+
+      <div class="fb-actions">
+        <button class="btn-sec" onclick="closeFb()">Sluiten</button>
+        <button class="btn-pri" onclick="resetScenario()">Nieuw scenario ›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const SCENARIOS = [
+  {
+    id: 1, type: 'B2B', sector: 'Bouw',
+    title: 'Projectmanager bouwmaterialen',
+    sub: 'Gesprek zonder kader eindigt in uitstel',
+    difficulty: 'medium', emoji: '🏗️',
+    clientName: 'Mark de Vries',
+    clientRole: 'Projectmanager | Aannemerij',
+    disc: { D:72, I:18, S:6, C:4 },
+    discDominant: 'D-type — Dominant',
+    discTip: 'D-types beslissen snel als de richting klopt. Zet direct een kader. Geen omwegen. Zijn bezwaren zijn signalen van onzekerheid over levertijd en betrouwbaarheid, niet over prijs. Benoem ze, los ze niet op.',
+    systemPrompt: `Je bent Mark de Vries, projectmanager bij een aannemerij. DISC D-type: direct, resultaatgericht, weinig geduld voor omwegen.
+
+SITUATIE: Je wilt bouwmaterialen inkopen voor een project dat over 3 weken start.
+
+GEDRAG volgens de Rechte Lijn Methode:
+- Je reageert kort en zakelijk. Je hebt geen tijd voor verkoopverhalen.
+- Je test of de verkoper richting geeft of alleen maar informatie verstrekt.
+- Je zegt "ik moet erover nadenken" als het gesprek geen kader heeft.
+- Je hebt onzekerheid over levertijd (3 weken deadline) en betrouwbaarheid van de leverancier.
+- Je beslist wél als de verkoper het gesprek leidt, jouw onzekerheid benoemt en een logische volgende stap aanbiedt.
+- Reageer in het Nederlands, kort en direct.`
+  },
+  {
+    id: 2, type: 'B2B', sector: 'Bouw',
+    title: 'Inkoopmanager overweegt leveranciersswitch',
+    sub: 'Zekerheid over organisatie ontbreekt',
+    difficulty: 'hard', emoji: '🔩',
+    clientName: 'Eric Bakker',
+    clientRole: 'Inkoop | Bouwgroothandel',
+    disc: { D:35, I:10, S:15, C:40 },
+    discDominant: 'C-type — Consciëntieus',
+    discTip: 'C-types hebben zekerheid over de oplossing én over de organisatie nodig. Meer uitleg geeft meer twijfel. Stel verhelderende vragen. Zijn "ik wil alles op papier" is geen bezwaar, het is een signaal: hij voelt zich nog niet veilig genoeg om te besluiten.',
+    systemPrompt: `Je bent Eric Bakker, inkoopmanager bij een bouwgroothandel. DISC C-type: analytisch, voorzichtig, detailgericht.
+
+SITUATIE: Je overweegt van leverancier te wisselen maar de drempel voelt hoog.
+
+GEDRAG volgens de Rechte Lijn Methode:
+- Je stelt veel vragen, maar dat zijn signalen van onzekerheid, geen echte bezwaren.
+- Je zegt "stuur maar wat informatie" als het gesprek geen richting heeft.
+- Je denkt: wat als dit straks niet goed uitpakt? Maar je zegt het niet hardop.
+- Je hebt drie zekerheden nodig: over de oplossing, over de persoon tegenover je, over de organisatie.
+- Je beslist als de verkoper jouw echte onzekerheid benoemt in plaats van ze weg te redeneren.
+- Reageer in het Nederlands, formeel en afwachtend.`
+  },
+  {
+    id: 3, type: 'B2C', sector: 'Bouw',
+    title: 'Particulier verbouwt badkamer',
+    sub: 'Emotie beslist, logica volgt later',
+    difficulty: 'easy', emoji: '🚿',
+    clientName: 'Sandra Pieterse',
+    clientRole: 'Particulier | Verbouwing',
+    disc: { D:8, I:28, S:55, C:9 },
+    discDominant: 'S-type — Stabiel',
+    discTip: 'S-types beslissen op gevoel en vertrouwen, niet op argumenten. Emotie vóór logica. Laat haar dromen benoemen voordat je iets presenteert. Haar "ik moet erover nadenken" is geen bezwaar, het is een signaal dat de zekerheid over jou als persoon nog niet volledig is.',
+    systemPrompt: `Je bent Sandra Pieterse, particulier die de badkamer wil verbouwen. DISC S-type: vriendelijk, loyaal, beslist op gevoel.
+
+SITUATIE: Je zoekt materialen maar de keuze voelt groot en spannend.
+
+GEDRAG volgens de Rechte Lijn Methode:
+- Je stelt veel vragen en twijfelt, maar je zoekt eigenlijk bevestiging en veiligheid.
+- Je zegt "ik moet erover nadenken" of "mijn man wil ook kijken" als je je onder druk voelt.
+- Wat je écht wil: iemand die luistert, richting geeft en je het gevoel geeft dat je de juiste keuze maakt.
+- Je beslist als de verkoper jouw gevoel serieus neemt en het gesprek rustig naar een logische afronding leidt.
+- Reageer in het Nederlands, vriendelijk en aarzelend.`
+  },
+  {
+    id: 4, type: 'B2B', sector: 'Coaching',
+    title: 'Teamleider zoekt salestraining',
+    sub: 'Uitstel is geen afwijzing, het is een signaal',
+    difficulty: 'medium', emoji: '📊',
+    clientName: 'Jolanda Smits',
+    clientRole: 'Teamleider | Verkoopteam',
+    disc: { D:45, I:20, S:20, C:15 },
+    discDominant: 'D/I-type — mix',
+    discTip: 'D/I-mix wil resultaat én een klik. Zet snel een kader: dit gesprek moet ergens naartoe. Haar scepticisme is een signaal van onzekerheid over de organisatie (heeft dit al eerder gewerkt?). Benoem dat. Stel de verhelderende vraag voordat je iets presenteert.',
+    systemPrompt: `Je bent Jolanda Smits, teamleider van een verkoopteam van 6 mensen. DISC D/I mix: resultaatgericht, mensgericht, direct.
+
+SITUATIE: Je zoekt een salestraining voor je team. Je bent sceptisch want een vorige training werkte niet.
+
+GEDRAG volgens de Rechte Lijn Methode:
+- Je wil geen theorie. Je wil weten wat het oplevert.
+- Je zegt "te duur" of "mijn mensen willen dit niet" als signaal van onzekerheid, niet als echt bezwaar.
+- Je echte onzekerheid is: werkt dit ook écht, of is het weer weggegooid geld?
+- Je beslist als de coach het gesprek leidt, jouw twijfel benoemt en het besluit normaliseert.
+- Reageer in het Nederlands, direct en open voor de juiste aanpak.`
+  },
+  {
+    id: 5, type: 'B2C', sector: 'Coaching',
+    title: 'ZZP'er wil klanten maar vindt verkopen eng',
+    sub: 'Wie de richting bewaakt, bepaalt de uitkomst',
+    difficulty: 'easy', emoji: '💼',
+    clientName: 'Tom van Beek',
+    clientRole: "ZZP'er | Grafisch ontwerper",
+    disc: { D:12, I:38, S:40, C:10 },
+    discDominant: 'I/S-type — mix',
+    discTip: 'I/S-mix beslist op gevoel en vertrouwen. Future pacing werkt hier goed: laat hem voelen hoe het eruitziet als het probleem weg is. Zijn bezwaar "ik ben niet het verkooptype" is geen inhoudelijk bezwaar, het is onzekerheid over zichzelf. Benoem het, redeneer het niet weg.',
+    systemPrompt: `Je bent Tom van Beek, freelance grafisch ontwerper. DISC I/S mix: enthousiast, sociaal, maar onzeker over verkopen.
+
+SITUATIE: Je wil meer klanten maar het woord "verkopen" voelt onnatuurlijk en opdringerig.
+
+GEDRAG volgens de Rechte Lijn Methode:
+- Je twijfelt of coaching iets voor jou is. Niet omdat je het niet wil, maar omdat je bang bent dat je jezelf moet veranderen.
+- Je bezwaar "ik ben niet het verkooptype" is een signaal van onzekerheid, geen afwijzing.
+- Je reageert goed als iemand jouw gevoel serieus neemt en richting geeft zonder druk.
+- Je beslist als je gelooft dat het voor jou kan werken en je je veilig voelt.
+- Reageer in het Nederlands, open, wat onzeker maar wel gemotiveerd.`
+  }
+];
+
+let current = null;
+let history = [];
+let turns = 0;
+let isLoading = false;
+let scores = { rapport: null, behoefte: null, product: null, bezwaar: null, closing: null };
+let totalScore = 0;
+let closingChance = 0;
+
+function startApp() {
+  document.getElementById('welcome').style.display = 'none';
+  renderScenarios();
+}
+
+function renderScenarios() {
+  const list = document.getElementById('scenario-list');
+  list.innerHTML = '';
+  SCENARIOS.forEach(s => {
+    const diffLabel = { easy: 'BEGINNER', medium: 'GEVORDERD', hard: 'EXPERT' }[s.difficulty];
+    list.innerHTML += `
+      <div class="scenario-card" id="sc${s.id}" onclick="selectScenario(${s.id})">
+        <div class="sc-top">
+          <span class="sc-type ${s.type.toLowerCase()}">${s.emoji} ${s.type}</span>
+          <span class="sc-diff ${s.difficulty}">${diffLabel}</span>
+        </div>
+        <div class="sc-title">${s.title}</div>
+        <div class="sc-sub">${s.sub}</div>
+      </div>`;
+  });
+}
+
+function selectScenario(id) {
+  current = SCENARIOS.find(s => s.id === id);
+  document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById(`sc${id}`).classList.add('selected');
+
+  setDisc(current.disc);
+  document.getElementById('disc-dominant').textContent = current.discDominant;
+  document.getElementById('disc-tip').textContent = current.discTip;
+  document.getElementById('client-ava').textContent = current.emoji;
+  document.getElementById('client-name').textContent = current.clientName;
+  document.getElementById('client-role').textContent = current.clientRole;
+
+  history = [];
+  scores = { rapport: null, behoefte: null, product: null, bezwaar: null, closing: null };
+  totalScore = 0; closingChance = 0; turns = 0;
+
+  updateUI();
+  document.getElementById('messages').innerHTML = '';
+  sysMsg(`Scenario gestart: "${current.title}". Jij bent de verkoper. Open het gesprek met ${current.clientName}.`);
+  document.getElementById('user-input').disabled = false;
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('user-input').placeholder = 'Open het gesprek...';
+  document.getElementById('user-input').focus();
+}
+
+function setDisc(d) {
+  ['d','i','s','c'].forEach(l => {
+    const val = d[l.toUpperCase()];
+    document.getElementById(`${l}bar`).style.width = val + '%';
+    document.getElementById(`${l}pct`).textContent = val + '%';
+  });
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function sysMsg(text) {
+  const m = document.getElementById('messages');
+  m.innerHTML += `<div class="msg system"><div class="bubble">${text}</div></div>`;
+  m.scrollTop = m.scrollHeight;
+}
+
+function addMsg(role, text) {
+  const m = document.getElementById('messages');
+  const isUser = role === 'user';
+  m.innerHTML += `
+    <div class="msg ${isUser ? 'user' : 'client'}">
+      <div class="msg-ava">${isUser ? '🧑' : current.emoji}</div>
+      <div class="bubble">${text}</div>
+    </div>`;
+  m.scrollTop = m.scrollHeight;
+}
+
+function showTyping() {
+  const m = document.getElementById('messages');
+  m.innerHTML += `<div class="msg client" id="typing">
+    <div class="msg-ava">${current.emoji}</div>
+    <div class="typing-bubble">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>
+  </div>`;
+  m.scrollTop = m.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  if (isLoading || !current) return;
+  const inp = document.getElementById('user-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = ''; inp.style.height = 'auto';
+  addMsg('user', text);
+  history.push({ role: 'user', content: text });
+  turns++;
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('turn-count').textContent = `${turns} ${turns === 1 ? 'beurt' : 'beurten'}`;
+  showTyping();
+
+  const phase = Math.min(Math.ceil(turns / 2), 5);
+  document.getElementById('phase-pill').textContent = `FASE ${phase}`;
+  updatePhaseDots(phase);
+
+  try {
+    const clientReply = await callClaude(current.systemPrompt, history);
+    removeTyping();
+    addMsg('client', clientReply);
+    history.push({ role: 'assistant', content: clientReply });
+    getLiveAnalysis(text, clientReply, phase);
+  } catch(e) {
+    removeTyping();
+    sysMsg('Er is een fout opgetreden. Probeer opnieuw.');
+  }
+
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+  inp.focus();
+}
+
+async function callClaude(sys, msgs) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: sys,
+      messages: msgs
+    })
+  });
+  const d = await r.json();
+  return d.content[0].text;
+}
+
+async function getLiveAnalysis(userMsg, clientMsg, phase) {
+  const conv = history.slice(-8).map(m =>
+    `${m.role === 'user' ? 'VERKOPER' : 'KLANT'}: ${m.content}`
+  ).join('\n');
+
+  const prompt = `Je bent Arie van Wingerden, auteur van "De Rechte Lijn Methode". Analyseer dit verkoopgespreksfragment op basis van jouw eigen methode.
+
+DE RECHTE LIJN METHODE heeft 5 stappen:
+1. KADER: Heeft de verkoper het gesprek een richting gegeven? ("Dan weten we allebei waar we aan toe zijn")
+2. VERBINDING: Heeft de verkoper echte verbinding gemaakt en de drie zekerheden opgebouwd? (zekerheid over oplossing, over de verkoper, over de organisatie)
+3. VERHELDERING: Heeft de verkoper het echte vraagstuk scherp gekregen? Emotie voor logica? ("Waar loop je nu het meest tegenaan?")
+4. RICHTING: Heeft de verkoper het gesprek versmald naar een logische koers? Bezwaren behandeld als signalen van onzekerheid, niet als obstakels?
+5. AFRONDING: Heeft de verkoper het besluit genormaliseerd? ("Is dit voor nu een ja, of een nee?") Sluiten zonder druk.
+
+Kernprincipes van Arie:
+- Uitstel is geen afwijzing, het is een signaal dat een zekerheid ontbreekt
+- Bezwaren bestaan niet - het zijn uitingen van onzekerheid
+- Wie de richting bewaakt, bepaalt de uitkomst
+- Emotie beslist, logica verantwoordt achteraf
+- Een nee is waardevoller dan onbeslist
+
+Geef ALLEEN JSON terug, geen tekst eromheen.
+
+Gesprek:
+\${conv}
+
+Ronde: \${turns}
+
+JSON formaat:
+{
+  "rapport": null of 0-10,
+  "behoefte": null of 0-10,
+  "product": null of 0-10,
+  "bezwaar": null of 0-10,
+  "closing": null of 0-10,
+  "total": 0-100,
+  "closing_kans": 0-100,
+  "gemist": ["max 2 gemiste kansen in Arie's taal, max 12 woorden elk"],
+  "tip": "één concrete tip in Arie's stijl, max 20 woorden, gebruik zijn taal"
+}
+
+Beoordeel alleen fases die gespeeld zijn. null = nog niet van toepassing. closing_kans = kans dat klant nu ja zegt (0-100).`;
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await r.json();
+    const a = JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+
+    scores = { rapport: a.rapport, behoefte: a.behoefte, product: a.product, bezwaar: a.bezwaar, closing: a.closing };
+    totalScore = a.total || 0;
+    closingChance = a.closing_kans || 0;
+    updateUI();
+
+    if (a.gemist?.length) {
+      document.getElementById('missed-ops').innerHTML = a.gemist.map(g =>
+        `<div class="kans-item"><span class="ki-icon">⚠️</span><span>${g}</span></div>`
+      ).join('');
+    }
+
+    if (a.tip) {
+      document.getElementById('live-tip').innerHTML = `<strong>💡 Volgende zet</strong>${a.tip}`;
+    }
+  } catch(e) { /* silent */ }
+}
+
+function updateUI() {
+  document.getElementById('total-score').textContent = totalScore;
+  document.getElementById('score-desc').textContent = totalScore < 40
+    ? 'Wie de richting bewaakt, bepaalt de uitkomst.'
+    : totalScore < 65
+    ? 'Goede basis. Bezwaren zijn signalen, geen blokkades.'
+    : totalScore < 80
+    ? 'Sterk gesprek. Normaliseer het besluit.'
+    : 'Uitstekend. Je leidt het proces, niet het resultaat.';
+
+  document.getElementById('cm-fill').style.width = closingChance + '%';
+  document.getElementById('cm-pct').textContent = closingChance + '%';
+
+  const fields = [
+    ['pr-rapport', scores.rapport],
+    ['pr-behoefte', scores.behoefte],
+    ['pr-product', scores.product],
+    ['pr-bezwaar', scores.bezwaar],
+    ['pr-closing', scores.closing]
+  ];
+
+  fields.forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (val === null || val === undefined) {
+      el.textContent = 'N/A'; el.className = 'prin-badge pb-na';
+    } else {
+      el.textContent = `${val}/10`;
+      el.className = `prin-badge ${val >= 7 ? 'pb-good' : val >= 5 ? 'pb-mid' : 'pb-low'}`;
+    }
+  });
+}
+
+function updatePhaseDots(active) {
+  ['hp1','hp2','hp3','hp4','hp5'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    const n = i + 1;
+    el.className = `hphase${n < active ? ' done' : n === active ? ' active' : ''}`;
+  });
+}
+
+async function endConversation() {
+  if (!current || history.length < 2) {
+    alert('Start eerst een gesprek.'); return;
+  }
+
+  document.getElementById('fb-loading').style.display = 'block';
+  document.getElementById('fb-content').style.display = 'none';
+  document.getElementById('fb-modal').classList.add('open');
+  document.getElementById('fb-scenario').textContent = `${current.type} | ${current.title}`;
+
+  const conv = history.map(m =>
+    `${m.role === 'user' ? 'VERKOPER' : 'KLANT'}: ${m.content}`
+  ).join('\n\n');
+
+  const prompt = `Je bent Arie van Wingerden, auteur van "De Rechte Lijn Methode". Geef een volledige gespreksanalyse in jouw eigen taal en stijl. Geef ALLEEN JSON.
+
+DE RECHTE LIJN METHODE - 5 stappen:
+1. KADER: Richting geven aan het gesprek. Regie nemen zonder te pushen.
+2. VERBINDING/VERHELDERING: Drie zekerheden opbouwen. Emotie voor logica. Echte behoeften blootleggen.
+3. RICHTING: Gesprek versmallen naar logische koers. DISC-profiel toepassen.
+4. BEZWAREN: Bezwaren zijn signalen van onzekerheid - vertragen, verhelderen, benoemen. NOOIT weerleggen.
+5. AFRONDING: Sluiten zonder druk. Besluit normaliseren. "Is dit een ja of een nee?"
+
+Kernprincipes:
+- "Wie de richting bewaakt, bepaalt de uitkomst"
+- "Uitstel is geen afwijzing, het is een signaal"
+- "Bezwaren bestaan niet - het zijn uitingen van onzekerheid"
+- "Een nee is waardevoller dan onbeslist"
+- "Emotie beslist, logica verantwoordt achteraf"
+
+KLANTPROFIEL: \${current.discDominant}
+DISC TIP: \${current.discTip}
+
+GESPREK:
+\${conv}
+
+JSON - gebruik Arie's taal in de omschrijvingen:
+{
+  "total": 0-100,
+  "rapport": { "score": 0-10, "omschrijving": "max 10 woorden in Arie's taal" },
+  "behoefte": { "score": 0-10, "omschrijving": "max 10 woorden" },
+  "product": { "score": 0-10, "omschrijving": "max 10 woorden" },
+  "bezwaar": { "score": 0-10, "omschrijving": "max 10 woorden" },
+  "closing": { "score": 0-10, "omschrijving": "max 10 woorden" },
+  "disc_aansluiting": "2 zinnen hoe goed verkoper aansloot op DISC-profiel van de klant",
+  "closing_analyse": "2 zinnen over hoe de verkoper het besluit heeft genormaliseerd of had kunnen normaliseren",
+  "gemiste_kansen": ["kans 1 in Arie's taal", "kans 2", "kans 3"],
+  "verbeterpunten": ["punt 1 als concrete actie", "punt 2", "punt 3"]
+}`;
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await r.json();
+    const fb = JSON.parse(d.content[0].text.replace(/```json|```/g,'').trim());
+
+    document.getElementById('fb-total').textContent = fb.total;
+    document.getElementById('fb-disc-type').textContent = current.discDominant;
+    document.getElementById('fb-disc-desc').textContent = fb.disc_aansluiting || '';
+    document.getElementById('fb-closing-analysis').textContent = fb.closing_analyse || '';
+
+    const prins = [
+      ['Kader zetten', fb.rapport],
+      ['Verbinding + Verheldering', fb.behoefte],
+      ['Richting benoemen', fb.product],
+      ['Bezwaar als signaal', fb.bezwaar],
+      ['Afronding zonder druk', fb.closing]
+    ];
+
+    document.getElementById('fb-principles').innerHTML = prins.map(([name, data]) => {
+      const sc = data?.score ?? 0;
+      const color = sc >= 7 ? 'var(--green)' : sc >= 5 ? 'var(--yellow)' : 'var(--red)';
+      return `<div class="fb-prin-row">
+        <span class="fb-prin-name">${name}</span>
+        <span class="fb-prin-score" style="color:${color}">${sc}/10</span>
+        <span class="fb-prin-desc">${data?.omschrijving || ''}</span>
+      </div>`;
+    }).join('');
+
+    if (fb.gemiste_kansen) {
+      document.getElementById('fb-missed').innerHTML = fb.gemiste_kansen.map(k => `<li>${k}</li>`).join('');
+    }
+    if (fb.verbeterpunten) {
+      document.getElementById('fb-improve').innerHTML = fb.verbeterpunten.map(v => `<li>${v}</li>`).join('');
+    }
+
+  } catch(e) {
+    document.getElementById('fb-total').textContent = totalScore;
+  }
+
+  document.getElementById('fb-loading').style.display = 'none';
+  document.getElementById('fb-content').style.display = 'block';
+}
+
+function closeFb() {
+  document.getElementById('fb-modal').classList.remove('open');
+}
+
+function resetScenario() {
+  closeFb();
+  current = null; history = []; turns = 0;
+  totalScore = 0; closingChance = 0;
+  scores = { rapport: null, behoefte: null, product: null, bezwaar: null, closing: null };
+  document.getElementById('messages').innerHTML = '<div class="msg system"><div class="bubble">Kies een scenario links om te beginnen.</div></div>';
+  document.getElementById('user-input').disabled = true;
+  document.getElementById('send-btn').disabled = true;
+  document.querySelectorAll('.scenario-card').forEach(c 
